@@ -51,18 +51,18 @@ body {
   font-family: "Microsoft YaHei", sans-serif;
   line-height: 1.6;
   color: var(--text-color);
-  padding: 20px;
+  padding: 10px;
   background-color: var(--bg-color);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 .container {
-  max-width: 1400px;
+  max-width: 98%;
   margin: 0 auto;
-  padding: 10px;
+  padding: 5px;
 }
 .header {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   justify-content: space-between;
   align-items: center;
 }
@@ -168,29 +168,29 @@ body {
 }
 .content {
   display: flex;
-  gap: 20px;
+  gap: 15px;
 }
 .sidebar {
-  width: 25%;
+  width: 20%;
   background-color: var(--card-bg);
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 6px var(--shadow-color);
   overflow-y: auto;
-  max-height: 80vh;
+  max-height: 88vh;
   transition: all 0.3s ease;
 }
 .sidebar:hover {
   box-shadow: 0 6px 12px var(--shadow-hover);
 }
 .main-content {
-  width: 75%;
+  width: 80%;
   background-color: var(--card-bg);
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 6px var(--shadow-color);
   overflow-y: auto;
-  max-height: 80vh;
+  max-height: 88vh;
   transition: all 0.3s ease;
 }
 .main-content:hover {
@@ -222,6 +222,15 @@ body {
   font-weight: bold;
   color: var(--primary-color);
 }
+
+/* 瀑布流布局 */
+.waterfall-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: 10px;
+  grid-auto-flow: dense;
+}
+
 .folder-title {
   padding: 10px 12px;
   background-color: var(--folder-bg);
@@ -232,7 +241,19 @@ body {
   box-shadow: 0 1px 3px var(--shadow-color);
   color: var(--folder-text);
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.folder-title::before {
+  content: "📁";
+  margin-right: 8px;
+  font-size: 16px;
+}
+
 .folder-title:hover {
   background-color: var(--folder-hover);
   transform: translateY(-1px);
@@ -244,9 +265,8 @@ body {
   font-weight: bold;
 }
 .bookmark-item {
-  display: block;
+  display: flex;
   padding: 8px 12px;
-  margin: 6px 0;
   border-radius: 6px;
   text-decoration: none;
   color: var(--primary-color);
@@ -254,7 +274,18 @@ body {
   background-color: var(--bookmark-bg);
   box-shadow: 0 1px 2px var(--shadow-color);
   font-weight: 500;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.bookmark-item::before {
+  content: "🔗";
+  margin-right: 8px;
+  font-size: 14px;
+}
+
 .bookmark-item:hover {
   background-color: var(--bookmark-hover);
   transform: translateY(-1px);
@@ -275,6 +306,8 @@ body {
   margin-bottom: 15px;
   box-shadow: 0 1px 3px var(--shadow-color);
   color: var(--text-color);
+  overflow-x: auto;
+  white-space: nowrap;
 }
 .breadcrumb span {
   transition: all 0.2s ease;
@@ -346,6 +379,34 @@ body {
 .search-result {
   margin-bottom: 8px;
 }
+
+/* 悬停时显示完整标题的工具提示 */
+.folder-title, .bookmark-item {
+  position: relative;
+}
+
+.folder-title:hover::after, .bookmark-item:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  padding: 5px 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px var(--shadow-color);
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.folder-title:hover::after, .bookmark-item:hover::after {
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
   .content {
     flex-direction: column;
@@ -353,5 +414,8 @@ body {
   .sidebar, .main-content {
     width: 100%;
     max-height: none;
+  }
+  .waterfall-container {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 } 

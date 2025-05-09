@@ -190,6 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const folderElement = document.createElement("div");
         folderElement.className = "folder-title";
         folderElement.textContent = item.name;
+        folderElement.title = item.name; // 添加标题属性用于提示
         folderElement.dataset.index = index;
 
         folderElement.addEventListener("click", () => {
@@ -234,9 +235,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
+    // 创建瀑布流容器
+    const waterfallContainer = document.createElement("div");
+    waterfallContainer.className = "waterfall-container";
+    bookmarkContent.appendChild(waterfallContainer);
+
     // 渲染当前层级的内容
     if (currentItems && currentItems.length > 0) {
-      renderBookmarkItems(currentItems, bookmarkContent);
+      renderBookmarkItems(currentItems, waterfallContainer);
     } else {
       bookmarkContent.innerHTML = "<p>没有书签内容</p>";
     }
@@ -249,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const folderElement = document.createElement("div");
         folderElement.className = "folder-title";
         folderElement.textContent = item.name;
+        folderElement.title = item.name; // 添加标题属性用于提示
 
         folderElement.addEventListener("click", () => {
           // 获取当前层级的路径
@@ -268,6 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
         linkElement.className = "bookmark-item";
         linkElement.href = item.url;
         linkElement.textContent = item.name;
+        linkElement.title = `${item.name}\n${item.url}`; // 添加标题和URL作为提示
         linkElement.target = "_blank";
         container.appendChild(linkElement);
       }
@@ -374,6 +382,11 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
+    // 创建瀑布流容器展示搜索结果
+    const waterfallContainer = document.createElement("div");
+    waterfallContainer.className = "waterfall-container";
+    bookmarkContent.appendChild(waterfallContainer);
+
     // 显示搜索结果
     if (results.length === 0) {
       bookmarkContent.innerHTML = "<p>没有找到匹配的书签</p>";
@@ -383,20 +396,19 @@ document.addEventListener('DOMContentLoaded', function() {
     results.forEach((result) => {
       const { item, path } = result;
 
-      const resultItem = document.createElement("div");
-      resultItem.className = "search-result";
-
       if (item.type === "url") {
         const link = document.createElement("a");
         link.href = item.url;
         link.className = "bookmark-item";
         link.textContent = item.name;
+        link.title = `${item.name}\n${item.url}`; // 添加标题和URL作为提示
         link.target = "_blank";
-        resultItem.appendChild(link);
+        waterfallContainer.appendChild(link);
       } else {
         const folderLink = document.createElement("div");
         folderLink.className = "folder-title";
         folderLink.textContent = item.name;
+        folderLink.title = item.name; // 添加标题属性用于提示
 
         folderLink.addEventListener("click", () => {
           const rootKey = path[0];
@@ -413,10 +425,8 @@ document.addEventListener('DOMContentLoaded', function() {
           renderMainContent();
         });
 
-        resultItem.appendChild(folderLink);
+        waterfallContainer.appendChild(folderLink);
       }
-
-      bookmarkContent.appendChild(resultItem);
     });
   }
 
