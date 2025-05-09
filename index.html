@@ -15,102 +15,147 @@
         line-height: 1.6;
         color: #333;
         padding: 20px;
+        background-color: #f5f7fa;
       }
       .container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        padding: 20px;
+        padding: 10px;
       }
       .header {
         display: flex;
         margin-bottom: 20px;
         justify-content: space-between;
+        align-items: center;
       }
       .search-container {
         flex-grow: 1;
         margin-right: 10px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        padding: 5px;
+        transition: all 0.3s ease;
+      }
+      .search-container:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
       }
       .search-input {
         width: 100%;
-        padding: 12px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
         font-size: 16px;
+        outline: none;
+        background-color: transparent;
+      }
+      .upload-container {
+        position: relative;
       }
       .upload-btn {
-        padding: 12px 20px;
+        padding: 8px 15px;
         background-color: #f1f1f1;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
       }
       .upload-btn:hover {
-        background-color: #e1e1e1;
+        background-color: #e9e9e9;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      }
+      .upload-icon {
+        margin-right: 5px;
+        font-size: 16px;
       }
       .content {
         display: flex;
-        border-top: 1px solid #ccc;
-        padding-top: 20px;
+        gap: 20px;
       }
       .sidebar {
-        width: 30%;
-        border-right: 1px solid #ccc;
-        padding-right: 20px;
+        width: 25%;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         overflow-y: auto;
-        max-height: 70vh;
+        max-height: 80vh;
+        transition: all 0.3s ease;
+      }
+      .sidebar:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
       }
       .main-content {
-        width: 70%;
-        padding-left: 20px;
+        width: 75%;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         overflow-y: auto;
-        max-height: 70vh;
+        max-height: 80vh;
+        transition: all 0.3s ease;
+      }
+      .main-content:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
       }
       .tab-buttons {
         display: flex;
         margin-bottom: 15px;
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid #eee;
+        gap: 2px;
       }
       .tab-button {
         padding: 8px 15px;
-        background-color: #f1f1f1;
-        border: 1px solid #ccc;
-        border-bottom: none;
-        border-radius: 5px 5px 0 0;
-        margin-right: 5px;
+        background-color: #f9f9f9;
+        border: none;
+        border-radius: 6px 6px 0 0;
+        margin-right: 2px;
         cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+      }
+      .tab-button:hover {
+        background-color: #f0f0f0;
       }
       .tab-button.active {
         background-color: #fff;
-        border-bottom: 1px solid #fff;
-        margin-bottom: -1px;
+        border-bottom: 2px solid #4a6cf7;
+        font-weight: bold;
+        color: #4a6cf7;
       }
       .folder-title {
-        padding: 10px;
+        padding: 10px 12px;
         background-color: #f9f9f9;
-        border: 1px solid #eee;
-        border-radius: 5px;
-        margin-bottom: 10px;
+        border-radius: 6px;
+        margin-bottom: 8px;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       }
       .folder-title:hover {
-        background-color: #eef;
+        background-color: #f0f0f0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
       }
       .bookmark-item {
         display: block;
-        padding: 8px 10px;
-        margin: 5px 0;
-        border: 1px solid #eee;
-        border-radius: 5px;
+        padding: 8px 12px;
+        margin: 6px 0;
+        border-radius: 6px;
         text-decoration: none;
         color: #0066cc;
-        transition: all 0.3s;
+        transition: all 0.2s ease;
+        background-color: #f9f9f9;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
       .bookmark-item:hover {
-        background-color: #f5f5f5;
+        background-color: #f0f0f0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
       }
       .folder-content {
         margin-left: 20px;
@@ -121,24 +166,35 @@
         display: none;
       }
       .breadcrumb {
-        padding: 10px;
+        padding: 12px;
         background-color: #f9f9f9;
-        border-radius: 5px;
+        border-radius: 6px;
         margin-bottom: 15px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .breadcrumb span {
+        transition: all 0.2s ease;
+        padding: 3px 5px;
+        border-radius: 4px;
+      }
+      .breadcrumb span:hover {
+        background-color: #f0f0f0;
       }
       .welcome-info {
         padding: 20px;
-        background-color: #f9f9f9;
+        background-color: #f7f9ff;
         border-radius: 8px;
-        border: 1px solid #e0e0e0;
         margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid #4a6cf7;
       }
       .welcome-info h2 {
         margin-bottom: 15px;
-        color: #333;
+        color: #4a6cf7;
       }
       .welcome-info p {
         margin-bottom: 10px;
+        color: #555;
       }
       .welcome-info ul {
         margin-left: 20px;
@@ -150,17 +206,64 @@
         border-radius: 3px;
         font-family: monospace;
       }
+      .drop-zone {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(74, 108, 247, 0.2);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+      .drop-zone.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .drop-zone-message {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-size: 20px;
+        color: #4a6cf7;
+      }
+      .search-result {
+        margin-bottom: 8px;
+      }
+      @media (max-width: 768px) {
+        .content {
+          flex-direction: column;
+        }
+        .sidebar, .main-content {
+          width: 100%;
+          max-height: none;
+        }
+      }
     </style>
   </head>
   <body>
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-zone-message">
+        释放鼠标上传书签文件
+      </div>
+    </div>
     <div class="container">
       <div class="header">
         <div class="search-container">
           <input type="text" class="search-input" placeholder="搜索书签内容" />
         </div>
-        <div>
+        <div class="upload-container">
           <input type="file" id="file-input" style="display: none" />
-          <button class="upload-btn" id="upload-button">文件上传</button>
+          <button class="upload-btn" id="upload-button">
+            <span class="upload-icon">📂</span> 上传书签
+          </button>
         </div>
       </div>
       <div class="content">
@@ -179,7 +282,7 @@
           <div id="bookmark-content">
             <div id="welcome-info" class="welcome-info">
               <h2>Chrome书签浏览工具</h2>
-              <p>请点击右上角的"文件上传"按钮，选择Chrome的书签文件。</p>
+              <p>请点击右上角的"上传书签"按钮，选择Chrome的书签文件。</p>
               <p>
                 Chrome书签文件通常位于：<code
                   >C:\Users\[用户名]\AppData\Local\Google\Chrome\User
@@ -187,6 +290,7 @@
                 >
               </p>
               <p>注意：书签文件没有后缀名，但是它是一个标准的JSON文件。</p>
+              <p>您也可以直接拖拽书签文件到此页面进行上传。</p>
               <p>上传成功后，您可以：</p>
               <ul>
                 <li>在左侧浏览书签目录结构</li>
@@ -215,6 +319,7 @@
       const sidebarContent = document.getElementById("sidebar-content");
       const bookmarkContent = document.getElementById("bookmark-content");
       const breadcrumbElement = document.getElementById("breadcrumb");
+      const dropZone = document.getElementById("drop-zone");
 
       // 事件监听
       uploadButton.addEventListener("click", () => {
@@ -227,18 +332,35 @@
       fileInput.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (!file) return;
+        handleFile(file);
+      });
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            bookmarksData = JSON.parse(e.target.result);
-            initBookmarks();
-          } catch (error) {
-            alert("解析书签文件失败，请确保文件格式正确");
-            console.error("解析书签文件失败", error);
-          }
-        };
-        reader.readAsText(file);
+      // 拖拽上传功能
+      document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('active');
+      });
+
+      document.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        if (e.relatedTarget === null || e.relatedTarget.nodeName === 'HTML') {
+          dropZone.classList.remove('active');
+        }
+      });
+
+      dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+      });
+
+      document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        
+        if (e.dataTransfer.files.length) {
+          const file = e.dataTransfer.files[0];
+          handleFile(file);
+        }
       });
 
       searchInput.addEventListener("input", (e) => {
@@ -346,7 +468,7 @@
                 el.style.backgroundColor = "#f9f9f9";
               });
               folderElement.style.fontWeight = "bold";
-              folderElement.style.backgroundColor = "#e1e1e1";
+              folderElement.style.backgroundColor = "#edf0ff";
             });
 
             sidebarContent.appendChild(folderElement);
@@ -563,6 +685,21 @@
 
           bookmarkContent.appendChild(resultItem);
         });
+      }
+
+      // 处理文件函数
+      function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            bookmarksData = JSON.parse(e.target.result);
+            initBookmarks();
+          } catch (error) {
+            alert("解析书签文件失败，请确保文件格式正确");
+            console.error("解析书签文件失败", error);
+          }
+        };
+        reader.readAsText(file);
       }
 
       // 为演示目的，加载demo数据
