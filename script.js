@@ -2,6 +2,8 @@
 let bookmarksData = null;
 let currentRootFolder = "bookmark_bar";
 let currentPath = [];
+let currentDetailsItem = null;
+let modalTimer = null; // 添加定时器变量，用于控制模态窗口显示/隐藏
 
 // DOM元素
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const breadcrumbElement = document.getElementById("breadcrumb");
   const dropZone = document.getElementById("drop-zone");
   const themeToggle = document.getElementById("theme-toggle");
+
+  // 创建模态窗口
+  createModal();
 
   // 主题切换功能
   function initTheme() {
@@ -55,6 +60,290 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 初始化主题
   initTheme();
+
+  // 创建模态窗口
+  function createModal() {
+    // 如果已经存在模态窗口，不重复创建
+    if (document.getElementById('details-modal')) return;
+
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.id = 'modal-overlay';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'details-modal';
+
+    // 模态窗口头部
+    const modalHeader = document.createElement('div');
+    modalHeader.className = 'modal-header';
+    
+    const modalTitle = document.createElement('h3');
+    modalTitle.id = 'modal-title';
+    modalTitle.textContent = '书签详细信息';
+    
+    const closeButton = document.createElement('button');
+    closeButton.className = 'modal-close';
+    closeButton.innerHTML = '&times;';
+    closeButton.addEventListener('click', closeModal);
+    
+    modalHeader.appendChild(modalTitle);
+    modalHeader.appendChild(closeButton);
+    
+    // 模态窗口内容
+    const modalBody = document.createElement('div');
+    modalBody.className = 'modal-body';
+    modalBody.id = 'modal-body';
+    
+    // 模态窗口底部
+    const modalFooter = document.createElement('div');
+    modalFooter.className = 'modal-footer';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'modal-button';
+    closeBtn.textContent = '关闭';
+    closeBtn.addEventListener('click', closeModal);
+    
+    modalFooter.appendChild(closeBtn);
+    
+    // 组装模态窗口
+    modal.appendChild(modalHeader);
+    modal.appendChild(modalBody);
+    modal.appendChild(modalFooter);
+    modalOverlay.appendChild(modal);
+    
+    // 添加到DOM
+    document.body.appendChild(modalOverlay);
+    
+    // 点击遮罩层关闭模态窗口
+    modalOverlay.addEventListener('click', function(e) {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+    
+    // ESC键关闭模态窗口
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+  }
+
+  // 打开模态窗口
+  function openModal(item) {
+    // 清除可能存在的关闭定时器
+    if (modalTimer) {
+      clearTimeout(modalTimer);
+      modalTimer = null;
+    }
+
+    currentDetailsItem = item;
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalOverlay = document.getElementById('modal-overlay');
+    
+    // 设置标题
+    modalTitle.textContent = item.type === 'url' ? '书签详细信息' : '文件夹详细信息';
+    
+    // 清空模态窗口内容
+    modalBody.innerHTML = '';
+    
+    // 添加基本信息组
+    const basicGroup = document.createElement('div');
+    basicGroup.className = 'detail-group';
+    
+    // 添加基本信息
+    addDetailRow(basicGroup, '名称', item.name);
+    addDetailRow(basicGroup, '类型', item.type === 'url' ? '网址书签' : '文件夹');
+    
+    if (item.id) {
+      addDetailRow(basicGroup, 'ID', item.id);
+    }
+    
+    if (item.guid) {
+      addDetailRow(basicGroup, 'GUID', item.guid);
+    }
+    
+    modalBody.appendChild(basicGroup);
+    
+    // 添加时间信息组
+    const timeGroup = document.createElement('div');
+    timeGroup.className = 'detail-group';
+    
+    addDetailRow(timeGroup, '添加时间', formatChromeTimestamp(item.date_added));
+    addDetailRow(timeGroup, '最后使用', formatChromeTimestamp(item.date_last_used));
+    
+    if (item.type === 'folder' && item.date_modified) {
+      addDetailRow(timeGroup, '修改时间', formatChromeTimestamp(item.date_modified));
+    }
+    
+    modalBody.appendChild(timeGroup);
+    
+    // 添加URL信息（如果是书签）
+    if (item.type === 'url' && item.url) {
+      const urlGroup = document.createElement('div');
+      urlGroup.className = 'detail-group';
+      
+      const urlRow = document.createElement('div');
+      urlRow.className = 'detail-row';
+      
+      const urlLabel = document.createElement('div');
+      urlLabel.className = 'detail-label';
+      urlLabel.textContent = 'URL:';
+      
+      const urlValue = document.createElement('div');
+      urlValue.className = 'detail-value special-value';
+      
+      // 创建可点击的URL
+      const urlLink = document.createElement('a');
+      urlLink.href = item.url;
+      urlLink.target = '_blank';
+      urlLink.textContent = item.url;
+      urlLink.style.textDecoration = 'none';
+      urlLink.style.color = 'inherit';
+      
+      urlValue.appendChild(urlLink);
+      urlRow.appendChild(urlLabel);
+      urlRow.appendChild(urlValue);
+      urlGroup.appendChild(urlRow);
+      
+      modalBody.appendChild(urlGroup);
+    }
+    
+    // 显示模态窗口
+    modalOverlay.classList.add('active');
+    
+    // 添加鼠标进入模态窗口事件，清除关闭定时器
+    modalOverlay.addEventListener('mouseenter', function() {
+      if (modalTimer) {
+        clearTimeout(modalTimer);
+        modalTimer = null;
+      }
+    });
+    
+    // 添加鼠标离开模态窗口事件，延迟关闭
+    modalOverlay.addEventListener('mouseleave', function() {
+      if (!modalTimer) {
+        modalTimer = setTimeout(closeModal, 300);
+      }
+    });
+  }
+  
+  // 添加详情行
+  function addDetailRow(container, label, value) {
+    const row = document.createElement('div');
+    row.className = 'detail-row';
+    
+    const labelEl = document.createElement('div');
+    labelEl.className = 'detail-label';
+    labelEl.textContent = label + ':';
+    
+    const valueEl = document.createElement('div');
+    valueEl.className = 'detail-value';
+    valueEl.textContent = value;
+    
+    row.appendChild(labelEl);
+    row.appendChild(valueEl);
+    container.appendChild(row);
+  }
+  
+  // 关闭模态窗口
+  function closeModal() {
+    const modalOverlay = document.getElementById('modal-overlay');
+    modalOverlay.classList.remove('active');
+    currentDetailsItem = null;
+    
+    // 清除定时器
+    if (modalTimer) {
+      clearTimeout(modalTimer);
+      modalTimer = null;
+    }
+  }
+
+  // 辅助函数：格式化Chrome时间戳（微秒）为人类可读日期
+  function formatChromeTimestamp(chromeTimestamp) {
+    if (!chromeTimestamp || chromeTimestamp === "0") {
+      return "从未";
+    }
+    
+    try {
+      // Chrome书签使用的是17位时间戳，表示从1601年1月1日起的微秒数
+      
+      // 首先确保时间戳是数字
+      let timestamp = typeof chromeTimestamp === 'string' ? 
+        parseInt(chromeTimestamp, 10) : chromeTimestamp;
+      
+      // 1. 将微秒转换为秒 (除以1,000,000)
+      let timestampInSeconds = timestamp / 1000000;
+      
+      // 2. 计算1601-01-01到1970-01-01之间的总秒数
+      // 这个值是固定的：11644473600秒 (369年)
+      const secondsBetween1601And1970 = 11644473600;
+      
+      // 3. 转换为Unix时间戳 (1970年为起点的秒数)
+      let unixTimestamp = timestampInSeconds - secondsBetween1601And1970;
+      
+      // 打印调试信息
+      console.log('时间戳调试:', {
+        原始时间戳: chromeTimestamp,
+        微秒转秒: timestampInSeconds,
+        Unix时间戳: unixTimestamp,
+        日期对象: new Date(unixTimestamp * 1000).toISOString()
+      });
+      
+      // 4. 转换为JavaScript日期对象 (毫秒为单位)
+      const jsDate = new Date(unixTimestamp * 1000);
+      
+      // 验证日期是否有效
+      if (isNaN(jsDate.getTime())) {
+        console.error("无效的时间戳:", chromeTimestamp);
+        return "无效日期";
+      }
+      
+      // 格式化为本地日期时间字符串
+      return jsDate.toLocaleString('zh-CN', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch (error) {
+      console.error("时间戳解析错误:", error, chromeTimestamp);
+      return "无法解析时间";
+    }
+  }
+
+  // 创建信息按钮
+  function createInfoButton(item) {
+    const infoBtn = document.createElement('span');
+    infoBtn.className = 'info-button';
+    infoBtn.innerHTML = 'i';
+    infoBtn.title = '查看详细信息';
+    
+    // 改为鼠标悬停事件（替代点击事件）
+    infoBtn.addEventListener('mouseenter', function(e) {
+      e.stopPropagation();
+      openModal(item);
+    });
+    
+    // 添加鼠标离开事件，延迟关闭模态窗口
+    infoBtn.addEventListener('mouseleave', function(e) {
+      e.stopPropagation();
+      if (!modalTimer) {
+        modalTimer = setTimeout(closeModal, 300);
+      }
+    });
+    
+    // 初始状态隐藏，只在父元素悬停时显示
+    infoBtn.style.opacity = '0';
+    infoBtn.style.visibility = 'hidden';
+    infoBtn.style.transition = 'opacity 0.3s, visibility 0.3s';
+    
+    return infoBtn;
+  }
 
   // 事件监听
   uploadButton.addEventListener("click", () => {
@@ -190,8 +479,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const folderElement = document.createElement("div");
         folderElement.className = "folder-title";
         folderElement.textContent = item.name;
-        folderElement.title = item.name; // 添加标题属性用于提示
         folderElement.dataset.index = index;
+        
+        // 添加信息按钮
+        const infoBtn = createInfoButton(item);
+        folderElement.appendChild(infoBtn);
+        
+        // 添加鼠标悬停事件显示信息按钮
+        folderElement.addEventListener('mouseenter', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '1';
+            infoButton.style.visibility = 'visible';
+          }
+        });
+        
+        // 鼠标离开时隐藏信息按钮
+        folderElement.addEventListener('mouseleave', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '0';
+            infoButton.style.visibility = 'hidden';
+          }
+        });
 
         folderElement.addEventListener("click", () => {
           currentPath = [index];
@@ -255,7 +565,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const folderElement = document.createElement("div");
         folderElement.className = "folder-title";
         folderElement.textContent = item.name;
-        folderElement.title = item.name; // 添加标题属性用于提示
+        
+        // 添加信息按钮
+        const infoBtn = createInfoButton(item);
+        folderElement.appendChild(infoBtn);
+        
+        // 添加鼠标悬停事件显示信息按钮
+        folderElement.addEventListener('mouseenter', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '1';
+            infoButton.style.visibility = 'visible';
+          }
+        });
+        
+        // 鼠标离开时隐藏信息按钮
+        folderElement.addEventListener('mouseleave', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '0';
+            infoButton.style.visibility = 'hidden';
+          }
+        });
 
         folderElement.addEventListener("click", () => {
           // 获取当前层级的路径
@@ -275,8 +606,30 @@ document.addEventListener('DOMContentLoaded', function() {
         linkElement.className = "bookmark-item";
         linkElement.href = item.url;
         linkElement.textContent = item.name;
-        linkElement.title = `${item.name}\n${item.url}`; // 添加标题和URL作为提示
         linkElement.target = "_blank";
+        
+        // 添加信息按钮
+        const infoBtn = createInfoButton(item);
+        linkElement.appendChild(infoBtn);
+        
+        // 添加鼠标悬停事件显示信息按钮
+        linkElement.addEventListener('mouseenter', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '1';
+            infoButton.style.visibility = 'visible';
+          }
+        });
+        
+        // 鼠标离开时隐藏信息按钮
+        linkElement.addEventListener('mouseleave', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '0';
+            infoButton.style.visibility = 'hidden';
+          }
+        });
+
         container.appendChild(linkElement);
       }
     });
@@ -401,14 +754,57 @@ document.addEventListener('DOMContentLoaded', function() {
         link.href = item.url;
         link.className = "bookmark-item";
         link.textContent = item.name;
-        link.title = `${item.name}\n${item.url}`; // 添加标题和URL作为提示
         link.target = "_blank";
+        
+        // 添加信息按钮
+        const infoBtn = createInfoButton(item);
+        link.appendChild(infoBtn);
+        
+        // 添加鼠标悬停事件显示信息按钮
+        link.addEventListener('mouseenter', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '1';
+            infoButton.style.visibility = 'visible';
+          }
+        });
+        
+        // 鼠标离开时隐藏信息按钮
+        link.addEventListener('mouseleave', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '0';
+            infoButton.style.visibility = 'hidden';
+          }
+        });
+
         waterfallContainer.appendChild(link);
       } else {
         const folderLink = document.createElement("div");
         folderLink.className = "folder-title";
         folderLink.textContent = item.name;
-        folderLink.title = item.name; // 添加标题属性用于提示
+        
+        // 添加信息按钮
+        const infoBtn = createInfoButton(item);
+        folderLink.appendChild(infoBtn);
+        
+        // 添加鼠标悬停事件显示信息按钮
+        folderLink.addEventListener('mouseenter', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '1';
+            infoButton.style.visibility = 'visible';
+          }
+        });
+        
+        // 鼠标离开时隐藏信息按钮
+        folderLink.addEventListener('mouseleave', function() {
+          const infoButton = this.querySelector('.info-button');
+          if (infoButton) {
+            infoButton.style.opacity = '0';
+            infoButton.style.visibility = 'hidden';
+          }
+        });
 
         folderLink.addEventListener("click", () => {
           const rootKey = path[0];

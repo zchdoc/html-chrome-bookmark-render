@@ -18,6 +18,24 @@
   --active-folder-bg: #e0e7ff;
   --active-folder-text: #2541b2;
   --folder-text: #333;
+  --tooltip-bg: rgba(0, 0, 0, 0.8);
+  --tooltip-text: #ffffff;
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --modal-bg: #ffffff;
+  --modal-border: #e0e0e0;
+  --modal-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --modal-header-bg: #f5f8ff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f0f0f0;
+  --bg-tertiary: #e0e0e0;
+  --text-primary: #333333;
+  --text-light: #ffffff;
+  --accent-primary: #4285f4;
+  --accent-hover: #5291f5;
+  --accent-active: #3367d6;
+  --folder-color: #e8ab3f;
+  --alert-info: #e3f2fd;
+  --alert-border: #2196f3;
 }
 
 [data-theme="dark"] {
@@ -40,6 +58,25 @@
   --active-folder-bg: #3a3a6a;
   --active-folder-text: #a8b9ff;
   --folder-text: #e1e1e1;
+  --tooltip-bg: rgba(50, 50, 50, 0.95);
+  --tooltip-text: #ffffff;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --modal-bg: #242444;
+  --modal-border: #3a3a6a;
+  --modal-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+  --modal-header-bg: #2d2d52;
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3d3d3d;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --text-light: #ffffff;
+  --accent-primary: #5c9aff;
+  --accent-hover: #73a9fc;
+  --accent-active: #477ee6;
+  --folder-color: #f0b959;
+  --alert-info: #0a2239;
+  --alert-border: #216baa;
 }
 
 * {
@@ -246,6 +283,8 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  position: relative;
+  padding-right: 30px;
 }
 
 .folder-title::before {
@@ -278,6 +317,8 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  position: relative;
+  padding-right: 30px;
 }
 
 .bookmark-item::before {
@@ -380,34 +421,185 @@ body {
   margin-bottom: 8px;
 }
 
-/* 悬停时显示完整标题的工具提示 */
-.folder-title, .bookmark-item {
+/* 信息查看按钮 */
+.info-button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  color: var(--text-light);
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.info-button:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* 模态窗口 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal {
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  background-color: var(--modal-bg);
+  border-radius: 8px;
+  box-shadow: var(--modal-shadow);
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.9);
+  transition: transform 0.3s;
+  overflow: hidden;
   position: relative;
 }
 
-.folder-title:hover::after, .bookmark-item:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  background-color: var(--card-bg);
+.modal-overlay.active .modal {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--modal-border);
+  background-color: var(--modal-header-bg);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
   color: var(--text-color);
-  padding: 5px 10px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-color);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.detail-group {
+  margin-bottom: 20px;
+  border: 1px solid var(--modal-border);
   border-radius: 4px;
-  box-shadow: 0 2px 5px var(--shadow-color);
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.2s;
-  pointer-events: none;
+  overflow: hidden;
 }
 
-.folder-title:hover::after, .bookmark-item:hover::after {
-  opacity: 1;
+.detail-row {
+  display: flex;
+  border-bottom: 1px solid var(--modal-border);
 }
 
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  width: 120px;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
+  font-weight: bold;
+  border-right: 1px solid var(--modal-border);
+}
+
+.detail-value {
+  flex: 1;
+  padding: 8px 12px;
+  word-break: break-all;
+}
+
+.special-value {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid var(--modal-border);
+}
+
+.modal-button {
+  padding: 8px 16px;
+  background-color: var(--accent-primary);
+  color: var(--text-light);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal-button:hover {
+  background-color: var(--accent-hover);
+}
+
+/* 在小屏幕上调整模态窗口 */
 @media (max-width: 768px) {
+  .modal {
+    width: 95%;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+  }
+  
+  .detail-label {
+    margin-bottom: 5px;
+  }
+  
   .content {
     flex-direction: column;
   }
