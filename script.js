@@ -4,6 +4,7 @@ let currentRootFolder = "bookmark_bar";
 let currentPath = [];
 let currentDetailsItem = null;
 let modalTimer = null; // 添加定时器变量，用于控制模态窗口显示/隐藏
+let currentViewMode = "waterfall"; // 添加视图模式变量，默认为瀑布流
 
 // DOM元素
 document.addEventListener('DOMContentLoaded', function() {
@@ -545,16 +546,70 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // 创建瀑布流容器
-    const waterfallContainer = document.createElement("div");
-    waterfallContainer.className = "waterfall-container";
-    bookmarkContent.appendChild(waterfallContainer);
+    // 创建视图切换控件
+    const viewToggleContainer = document.createElement("div");
+    viewToggleContainer.className = "view-toggle-container";
+    
+    const viewToggleLabel = document.createElement("div");
+    viewToggleLabel.className = "view-toggle-label";
+    viewToggleLabel.textContent = "视图切换:";
+    viewToggleContainer.appendChild(viewToggleLabel);
+    
+    const viewToggleButtons = document.createElement("div");
+    viewToggleButtons.className = "view-toggle-buttons";
+    
+    // 瀑布流按钮
+    const waterfallButton = document.createElement("button");
+    waterfallButton.className = "view-toggle-button" + (currentViewMode === "waterfall" ? " active" : "");
+    waterfallButton.textContent = "经典视图";
+    waterfallButton.addEventListener("click", () => {
+      if (currentViewMode !== "waterfall") {
+        currentViewMode = "waterfall";
+        renderMainContent();
+      }
+    });
+    viewToggleButtons.appendChild(waterfallButton);
+    
+    // 科幻视图按钮
+    const scifiButton = document.createElement("button");
+    scifiButton.className = "view-toggle-button" + (currentViewMode === "scifi" ? " active" : "");
+    scifiButton.textContent = "科幻视图";
+    scifiButton.addEventListener("click", () => {
+      if (currentViewMode !== "scifi") {
+        currentViewMode = "scifi";
+        renderMainContent();
+      }
+    });
+    viewToggleButtons.appendChild(scifiButton);
+    
+    viewToggleContainer.appendChild(viewToggleButtons);
+    bookmarkContent.appendChild(viewToggleContainer);
 
-    // 渲染当前层级的内容
-    if (currentItems && currentItems.length > 0) {
-      renderBookmarkItems(currentItems, waterfallContainer);
-    } else {
-      bookmarkContent.innerHTML = "<p>没有书签内容</p>";
+    // 根据当前视图模式创建相应的容器
+    if (currentViewMode === "waterfall") {
+      // 创建瀑布流容器
+      const waterfallContainer = document.createElement("div");
+      waterfallContainer.className = "waterfall-container";
+      bookmarkContent.appendChild(waterfallContainer);
+      
+      // 渲染当前层级的内容
+      if (currentItems && currentItems.length > 0) {
+        renderBookmarkItems(currentItems, waterfallContainer);
+      } else {
+        waterfallContainer.innerHTML = "<p>没有书签内容</p>";
+      }
+    } else if (currentViewMode === "scifi") {
+      // 创建科幻视图容器
+      const scifiContainer = document.createElement("div");
+      scifiContainer.className = "scifi-container";
+      bookmarkContent.appendChild(scifiContainer);
+      
+      // 渲染当前层级的内容
+      if (currentItems && currentItems.length > 0) {
+        renderScifiItems(currentItems, scifiContainer);
+      } else {
+        scifiContainer.innerHTML = "<p>没有书签内容</p>";
+      }
     }
   }
 
@@ -632,6 +687,97 @@ document.addEventListener('DOMContentLoaded', function() {
 
         container.appendChild(linkElement);
       }
+    });
+  }
+
+  // 渲染科幻视图书签项目
+  function renderScifiItems(items, container) {
+    items.forEach((item, index) => {
+      const scifiItem = document.createElement("div");
+      scifiItem.className = "scifi-item " + (item.type === "folder" ? "scifi-folder" : "scifi-url");
+      
+      const scifiContent = document.createElement("div");
+      scifiContent.className = "scifi-content";
+      
+      // 添加图标
+      const iconElement = document.createElement("div");
+      iconElement.className = "scifi-icon";
+      iconElement.textContent = item.type === "folder" ? "📁" : "🔗";
+      scifiContent.appendChild(iconElement);
+      
+      // 添加名称
+      const nameElement = document.createElement("div");
+      nameElement.className = "scifi-name";
+      nameElement.textContent = item.name;
+      scifiContent.appendChild(nameElement);
+      
+      // 如果是URL，添加URL文本
+      if (item.type === "url") {
+        const urlElement = document.createElement("div");
+        urlElement.className = "scifi-url-text";
+        // 显示简化的URL
+        let displayUrl = item.url;
+        try {
+          const urlObj = new URL(item.url);
+          displayUrl = urlObj.hostname;
+        } catch (e) {
+          // 如果解析URL失败，使用原始URL
+        }
+        urlElement.textContent = displayUrl;
+        scifiContent.appendChild(urlElement);
+      }
+      
+      scifiItem.appendChild(scifiContent);
+      
+      // 创建信息按钮
+      const infoBtn = createInfoButton(item);
+      scifiContent.appendChild(infoBtn);
+      
+      // 添加鼠标悬停事件显示信息按钮
+      scifiItem.addEventListener('mouseenter', function() {
+        const infoButton = this.querySelector('.info-button');
+        if (infoButton) {
+          infoButton.style.opacity = '1';
+          infoButton.style.visibility = 'visible';
+        }
+      });
+      
+      // 鼠标离开时隐藏信息按钮
+      scifiItem.addEventListener('mouseleave', function() {
+        const infoButton = this.querySelector('.info-button');
+        if (infoButton) {
+          infoButton.style.opacity = '0';
+          infoButton.style.visibility = 'hidden';
+        }
+      });
+      
+      // 添加点击事件
+      if (item.type === "folder") {
+        scifiItem.addEventListener("click", function(e) {
+          // 如果点击的是信息按钮，不执行导航
+          if (e.target.closest('.info-button')) {
+            return;
+          }
+          // 获取当前层级的路径
+          const newPath = [...currentPath, index];
+          // 更新当前路径
+          currentPath = newPath;
+          updateBreadcrumb();
+          // 渲染新内容
+          renderMainContent();
+        });
+      } else if (item.type === "url") {
+        scifiItem.addEventListener("click", function(e) {
+          // 如果点击的是信息按钮，不执行打开链接
+          if (e.target.closest('.info-button')) {
+            return;
+          }
+          // 打开URL链接
+          window.open(item.url, "_blank");
+        });
+      }
+      
+      container.appendChild(scifiItem);
     });
   }
 
@@ -729,39 +875,194 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 在所有三个根文件夹中搜索
     ["bookmark_bar", "other", "synced"].forEach((rootKey) => {
-      const rootFolder = bookmarksData.roots[rootKey];
-      if (rootFolder && rootFolder.children) {
-        searchInItems(rootFolder.children, [rootKey]);
+      if (bookmarksData.roots[rootKey] && bookmarksData.roots[rootKey].children) {
+        searchInItems(bookmarksData.roots[rootKey].children, [], rootKey);
       }
     });
 
-    // 创建瀑布流容器展示搜索结果
-    const waterfallContainer = document.createElement("div");
-    waterfallContainer.className = "waterfall-container";
-    bookmarkContent.appendChild(waterfallContainer);
+    // 创建视图切换控件
+    const viewToggleContainer = document.createElement("div");
+    viewToggleContainer.className = "view-toggle-container";
+    
+    const viewToggleLabel = document.createElement("div");
+    viewToggleLabel.className = "view-toggle-label";
+    viewToggleLabel.textContent = "视图切换:";
+    viewToggleContainer.appendChild(viewToggleLabel);
+    
+    const viewToggleButtons = document.createElement("div");
+    viewToggleButtons.className = "view-toggle-buttons";
+    
+    // 瀑布流按钮
+    const waterfallButton = document.createElement("button");
+    waterfallButton.className = "view-toggle-button" + (currentViewMode === "waterfall" ? " active" : "");
+    waterfallButton.textContent = "经典视图";
+    waterfallButton.addEventListener("click", () => {
+      if (currentViewMode !== "waterfall") {
+        currentViewMode = "waterfall";
+        searchBookmarks(searchTerm);
+      }
+    });
+    viewToggleButtons.appendChild(waterfallButton);
+    
+    // 科幻视图按钮
+    const scifiButton = document.createElement("button");
+    scifiButton.className = "view-toggle-button" + (currentViewMode === "scifi" ? " active" : "");
+    scifiButton.textContent = "科幻视图";
+    scifiButton.addEventListener("click", () => {
+      if (currentViewMode !== "scifi") {
+        currentViewMode = "scifi";
+        searchBookmarks(searchTerm);
+      }
+    });
+    viewToggleButtons.appendChild(scifiButton);
+    
+    viewToggleContainer.appendChild(viewToggleButtons);
+    bookmarkContent.appendChild(viewToggleContainer);
 
-    // 显示搜索结果
+    // 显示结果数量
+    const resultInfo = document.createElement("div");
+    resultInfo.style.margin = "10px 0";
+    resultInfo.textContent = `找到 ${results.length} 个结果`;
+    bookmarkContent.appendChild(resultInfo);
+
     if (results.length === 0) {
-      bookmarkContent.innerHTML = "<p>没有找到匹配的书签</p>";
+      const noResults = document.createElement("p");
+      noResults.textContent = "没有找到匹配的书签";
+      bookmarkContent.appendChild(noResults);
       return;
     }
 
-    results.forEach((result) => {
-      const { item, path } = result;
-
-      if (item.type === "url") {
-        const link = document.createElement("a");
-        link.href = item.url;
-        link.className = "bookmark-item";
-        link.textContent = item.name;
-        link.target = "_blank";
+    // 根据视图模式显示结果
+    if (currentViewMode === "waterfall") {
+      // 创建瀑布流容器
+      const searchResultContainer = document.createElement("div");
+      searchResultContainer.className = "waterfall-container";
+      bookmarkContent.appendChild(searchResultContainer);
+      
+      // 渲染搜索结果
+      results.forEach((result) => {
+        const searchResult = document.createElement("div");
+        searchResult.className = "search-result";
         
-        // 添加信息按钮
-        const infoBtn = createInfoButton(item);
-        link.appendChild(infoBtn);
+        if (result.item.type === "folder") {
+          const folderElement = document.createElement("div");
+          folderElement.className = "folder-title";
+          folderElement.textContent = result.item.name;
+          
+          // 添加信息按钮
+          const infoBtn = createInfoButton(result.item);
+          folderElement.appendChild(infoBtn);
+          
+          // 添加鼠标悬停事件显示信息按钮
+          folderElement.addEventListener('mouseenter', function() {
+            const infoButton = this.querySelector('.info-button');
+            if (infoButton) {
+              infoButton.style.opacity = '1';
+              infoButton.style.visibility = 'visible';
+            }
+          });
+          
+          // 鼠标离开时隐藏信息按钮
+          folderElement.addEventListener('mouseleave', function() {
+            const infoButton = this.querySelector('.info-button');
+            if (infoButton) {
+              infoButton.style.opacity = '0';
+              infoButton.style.visibility = 'hidden';
+            }
+          });
+          
+          folderElement.addEventListener("click", () => {
+            currentRootFolder = result.rootKey || currentRootFolder;
+            currentPath = result.path;
+            updateBreadcrumb();
+            renderMainContent();
+          });
+          
+          searchResult.appendChild(folderElement);
+        } else if (result.item.type === "url") {
+          const linkElement = document.createElement("a");
+          linkElement.className = "bookmark-item";
+          linkElement.href = result.item.url;
+          linkElement.textContent = result.item.name;
+          linkElement.target = "_blank";
+          
+          // 添加信息按钮
+          const infoBtn = createInfoButton(result.item);
+          linkElement.appendChild(infoBtn);
+          
+          // 添加鼠标悬停事件显示信息按钮
+          linkElement.addEventListener('mouseenter', function() {
+            const infoButton = this.querySelector('.info-button');
+            if (infoButton) {
+              infoButton.style.opacity = '1';
+              infoButton.style.visibility = 'visible';
+            }
+          });
+          
+          // 鼠标离开时隐藏信息按钮
+          linkElement.addEventListener('mouseleave', function() {
+            const infoButton = this.querySelector('.info-button');
+            if (infoButton) {
+              infoButton.style.opacity = '0';
+              infoButton.style.visibility = 'hidden';
+            }
+          });
+          
+          searchResult.appendChild(linkElement);
+        }
+        
+        searchResultContainer.appendChild(searchResult);
+      });
+    } else if (currentViewMode === "scifi") {
+      // 创建科幻视图容器
+      const scifiContainer = document.createElement("div");
+      scifiContainer.className = "scifi-container";
+      bookmarkContent.appendChild(scifiContainer);
+      
+      // 渲染搜索结果
+      results.forEach((result) => {
+        const scifiItem = document.createElement("div");
+        scifiItem.className = "scifi-item " + (result.item.type === "folder" ? "scifi-folder" : "scifi-url");
+        
+        const scifiContent = document.createElement("div");
+        scifiContent.className = "scifi-content";
+        
+        // 添加图标
+        const iconElement = document.createElement("div");
+        iconElement.className = "scifi-icon";
+        iconElement.textContent = result.item.type === "folder" ? "📁" : "🔗";
+        scifiContent.appendChild(iconElement);
+        
+        // 添加名称
+        const nameElement = document.createElement("div");
+        nameElement.className = "scifi-name";
+        nameElement.textContent = result.item.name;
+        scifiContent.appendChild(nameElement);
+        
+        // 如果是URL，添加URL文本
+        if (result.item.type === "url") {
+          const urlElement = document.createElement("div");
+          urlElement.className = "scifi-url-text";
+          // 显示简化的URL
+          let displayUrl = result.item.url;
+          try {
+            const urlObj = new URL(result.item.url);
+            displayUrl = urlObj.hostname;
+          } catch (e) {
+            // 如果解析URL失败，使用原始URL
+          }
+          urlElement.textContent = displayUrl;
+          scifiContent.appendChild(urlElement);
+        }
+        
+        scifiItem.appendChild(scifiContent);
+        
+        // 创建信息按钮
+        const infoBtn = createInfoButton(result.item);
+        scifiContent.appendChild(infoBtn);
         
         // 添加鼠标悬停事件显示信息按钮
-        link.addEventListener('mouseenter', function() {
+        scifiItem.addEventListener('mouseenter', function() {
           const infoButton = this.querySelector('.info-button');
           if (infoButton) {
             infoButton.style.opacity = '1';
@@ -770,60 +1071,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // 鼠标离开时隐藏信息按钮
-        link.addEventListener('mouseleave', function() {
+        scifiItem.addEventListener('mouseleave', function() {
           const infoButton = this.querySelector('.info-button');
           if (infoButton) {
             infoButton.style.opacity = '0';
             infoButton.style.visibility = 'hidden';
           }
         });
-
-        waterfallContainer.appendChild(link);
-      } else {
-        const folderLink = document.createElement("div");
-        folderLink.className = "folder-title";
-        folderLink.textContent = item.name;
         
-        // 添加信息按钮
-        const infoBtn = createInfoButton(item);
-        folderLink.appendChild(infoBtn);
+        // 添加点击事件
+        if (result.item.type === "folder") {
+          scifiItem.addEventListener("click", function(e) {
+            // 如果点击的是信息按钮，不执行导航
+            if (e.target.closest('.info-button')) {
+              return;
+            }
+            // 导航到文件夹
+            currentRootFolder = result.rootKey || currentRootFolder;
+            currentPath = result.path;
+            updateBreadcrumb();
+            renderMainContent();
+          });
+        } else if (result.item.type === "url") {
+          scifiItem.addEventListener("click", function(e) {
+            // 如果点击的是信息按钮，不执行打开链接
+            if (e.target.closest('.info-button')) {
+              return;
+            }
+            // 打开URL链接
+            window.open(result.item.url, "_blank");
+          });
+        }
         
-        // 添加鼠标悬停事件显示信息按钮
-        folderLink.addEventListener('mouseenter', function() {
-          const infoButton = this.querySelector('.info-button');
-          if (infoButton) {
-            infoButton.style.opacity = '1';
-            infoButton.style.visibility = 'visible';
-          }
-        });
-        
-        // 鼠标离开时隐藏信息按钮
-        folderLink.addEventListener('mouseleave', function() {
-          const infoButton = this.querySelector('.info-button');
-          if (infoButton) {
-            infoButton.style.opacity = '0';
-            infoButton.style.visibility = 'hidden';
-          }
-        });
-
-        folderLink.addEventListener("click", () => {
-          const rootKey = path[0];
-          const folderPath = path.slice(1);
-
-          // 切换到对应的根文件夹
-          document
-            .querySelector(`.tab-button[data-target="${rootKey}"]`)
-            .click();
-
-          // 设置当前路径到搜索结果的路径
-          currentPath = folderPath;
-          updateBreadcrumb();
-          renderMainContent();
-        });
-
-        waterfallContainer.appendChild(folderLink);
-      }
-    });
+        scifiContainer.appendChild(scifiItem);
+      });
+    }
   }
 
   // 处理文件函数
