@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chrome书签浏览器</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Microsoft YaHei", sans-serif;
+        line-height: 1.6;
+        color: #333;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+      }
+      .header {
+        display: flex;
+        margin-bottom: 20px;
+        justify-content: space-between;
+      }
+      .search-container {
+        flex-grow: 1;
+        margin-right: 10px;
+      }
+      .search-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      .upload-btn {
+        padding: 12px 20px;
+        background-color: #f1f1f1;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .upload-btn:hover {
+        background-color: #e1e1e1;
+      }
+      .content {
+        display: flex;
+        border-top: 1px solid #ccc;
+        padding-top: 20px;
+      }
+      .sidebar {
+        width: 30%;
+        border-right: 1px solid #ccc;
+        padding-right: 20px;
+        overflow-y: auto;
+        max-height: 70vh;
+      }
+      .main-content {
+        width: 70%;
+        padding-left: 20px;
+        overflow-y: auto;
+        max-height: 70vh;
+      }
+      .tab-buttons {
+        display: flex;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #ccc;
+      }
+      .tab-button {
+        padding: 8px 15px;
+        background-color: #f1f1f1;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        border-radius: 5px 5px 0 0;
+        margin-right: 5px;
+        cursor: pointer;
+      }
+      .tab-button.active {
+        background-color: #fff;
+        border-bottom: 1px solid #fff;
+        margin-bottom: -1px;
+      }
+      .folder-title {
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .folder-title:hover {
+        background-color: #eef;
+      }
+      .bookmark-item {
+        display: block;
+        padding: 8px 10px;
+        margin: 5px 0;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #0066cc;
+        transition: all 0.3s;
+      }
+      .bookmark-item:hover {
+        background-color: #f5f5f5;
+      }
+      .folder-content {
+        margin-left: 20px;
+        border-left: 2px solid #eee;
+        padding-left: 10px;
+      }
+      .hidden {
+        display: none;
+      }
+      .breadcrumb {
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+      .welcome-info {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+      }
+      .welcome-info h2 {
+        margin-bottom: 15px;
+        color: #333;
+      }
+      .welcome-info p {
+        margin-bottom: 10px;
+      }
+      .welcome-info ul {
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+      .welcome-info code {
+        background-color: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="search-container">
+          <input type="text" class="search-input" placeholder="搜索书签内容" />
+        </div>
+        <div>
+          <input type="file" id="file-input" style="display: none" />
+          <button class="upload-btn" id="upload-button">文件上传</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="sidebar">
+          <div class="tab-buttons">
+            <button class="tab-button active" data-target="bookmark_bar">
+              书签栏
+            </button>
+            <button class="tab-button" data-target="other">其他</button>
+            <button class="tab-button" data-target="synced">同步</button>
+          </div>
+          <div id="sidebar-content"></div>
+        </div>
+        <div class="main-content" id="main-content">
+          <div class="breadcrumb" id="breadcrumb"></div>
+          <div id="bookmark-content">
+            <div id="welcome-info" class="welcome-info">
+              <h2>Chrome书签浏览工具</h2>
+              <p>请点击右上角的"文件上传"按钮，选择Chrome的书签文件。</p>
+              <p>
+                Chrome书签文件通常位于：<code
+                  >C:\Users\[用户名]\AppData\Local\Google\Chrome\User
+                  Data\Default\Bookmarks</code
+                >
+              </p>
+              <p>注意：书签文件没有后缀名，但是它是一个标准的JSON文件。</p>
+              <p>上传成功后，您可以：</p>
+              <ul>
+                <li>在左侧浏览书签目录结构</li>
+                <li>点击文件夹查看子文件夹和书签</li>
+                <li>点击书签直接打开链接</li>
+                <li>使用顶部搜索框搜索书签</li>
+                <li>通过顶部标签页切换不同的根书签目录</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 全局变量
+      let bookmarksData = null;
+      let currentRootFolder = "bookmark_bar";
+      let currentPath = [];
+
+      // DOM元素
+      const fileInput = document.getElementById("file-input");
+      const uploadButton = document.getElementById("upload-button");
+      const searchInput = document.querySelector(".search-input");
+      const tabButtons = document.querySelectorAll(".tab-button");
+      const sidebarContent = document.getElementById("sidebar-content");
+      const bookmarkContent = document.getElementById("bookmark-content");
+      const breadcrumbElement = document.getElementById("breadcrumb");
+
+      // 事件监听
+      uploadButton.addEventListener("click", () => {
+        // 设置默认打开路径（注意：这在Web环境中不起作用，仅作为提示）
+        fileInput.nwworkingdir =
+          "C:\\Users\\zchcpy\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\";
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            bookmarksData = JSON.parse(e.target.result);
+            initBookmarks();
+          } catch (error) {
+            alert("解析书签文件失败，请确保文件格式正确");
+            console.error("解析书签文件失败", error);
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      searchInput.addEventListener("input", (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        if (searchTerm.length < 2) {
+          // 如果搜索词少于2个字符，恢复正常显示
+          initBookmarks();
+          return;
+        }
+        searchBookmarks(searchTerm);
+      });
+
+      tabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          tabButtons.forEach((btn) => btn.classList.remove("active"));
+          button.classList.add("active");
+          currentRootFolder = button.dataset.target;
+          currentPath = [];
+          initBookmarks();
+        });
+      });
+
+      // 初始化书签
+      function initBookmarks() {
+        if (!bookmarksData) return;
+
+        // 清除欢迎信息
+        const welcomeInfo = document.getElementById("welcome-info");
+        if (welcomeInfo) {
+          welcomeInfo.style.display = "none";
+        }
+
+        // 统计书签总数
+        const totalCount = countBookmarks();
+
+        // 清空当前路径
+        currentPath = [];
+        updateBreadcrumb();
+
+        // 更新标题显示总数
+        document.title = `Chrome书签浏览器 (${totalCount}个书签)`;
+
+        // 渲染侧边栏
+        renderSidebar();
+
+        // 渲染主内容区域（默认显示第一个一级目录的内容）
+        renderMainContent();
+      }
+
+      // 统计书签总数
+      function countBookmarks() {
+        let count = 0;
+
+        function countInItems(items) {
+          if (!items) return;
+
+          items.forEach((item) => {
+            if (item.type === "url") {
+              count++;
+            }
+
+            if (item.children) {
+              countInItems(item.children);
+            }
+          });
+        }
+
+        // 在所有根文件夹中计数
+        ["bookmark_bar", "other", "synced"].forEach((rootKey) => {
+          const rootFolder = bookmarksData.roots[rootKey];
+          if (rootFolder && rootFolder.children) {
+            countInItems(rootFolder.children);
+          }
+        });
+
+        return count;
+      }
+
+      // 渲染侧边栏
+      function renderSidebar() {
+        sidebarContent.innerHTML = "";
+
+        const rootFolder = bookmarksData.roots[currentRootFolder];
+        if (!rootFolder || !rootFolder.children) {
+          sidebarContent.innerHTML = "<p>没有找到书签内容</p>";
+          return;
+        }
+
+        // 渲染一级目录
+        rootFolder.children.forEach((item, index) => {
+          if (item.type === "folder") {
+            const folderElement = document.createElement("div");
+            folderElement.className = "folder-title";
+            folderElement.textContent = item.name;
+            folderElement.dataset.index = index;
+
+            folderElement.addEventListener("click", () => {
+              currentPath = [index];
+              updateBreadcrumb();
+              renderMainContent();
+
+              // 高亮选中的文件夹
+              document.querySelectorAll(".folder-title").forEach((el) => {
+                el.style.fontWeight = "normal";
+                el.style.backgroundColor = "#f9f9f9";
+              });
+              folderElement.style.fontWeight = "bold";
+              folderElement.style.backgroundColor = "#e1e1e1";
+            });
+
+            sidebarContent.appendChild(folderElement);
+          }
+        });
+
+        // 默认选中第一个文件夹
+        if (rootFolder.children.length > 0) {
+          const firstFolder = sidebarContent.querySelector(".folder-title");
+          if (firstFolder) {
+            firstFolder.click();
+          }
+        }
+      }
+
+      // 渲染主内容区域
+      function renderMainContent() {
+        bookmarkContent.innerHTML = "";
+
+        if (!bookmarksData) return;
+
+        let currentItems = bookmarksData.roots[currentRootFolder].children;
+
+        // 根据当前路径获取要显示的items
+        for (const index of currentPath) {
+          if (currentItems[index] && currentItems[index].children) {
+            currentItems = currentItems[index].children;
+          } else {
+            break;
+          }
+        }
+
+        // 渲染当前层级的内容
+        if (currentItems && currentItems.length > 0) {
+          renderBookmarkItems(currentItems, bookmarkContent);
+        } else {
+          bookmarkContent.innerHTML = "<p>没有书签内容</p>";
+        }
+      }
+
+      // 渲染书签项目
+      function renderBookmarkItems(items, container) {
+        items.forEach((item, index) => {
+          if (item.type === "folder") {
+            const folderElement = document.createElement("div");
+            folderElement.className = "folder-title";
+            folderElement.textContent = item.name;
+
+            folderElement.addEventListener("click", () => {
+              // 获取当前层级的路径
+              const newPath = [...currentPath, index];
+
+              // 更新当前路径
+              currentPath = newPath;
+              updateBreadcrumb();
+
+              // 渲染新内容
+              renderMainContent();
+            });
+
+            container.appendChild(folderElement);
+          } else if (item.type === "url") {
+            const linkElement = document.createElement("a");
+            linkElement.className = "bookmark-item";
+            linkElement.href = item.url;
+            linkElement.textContent = item.name;
+            linkElement.target = "_blank";
+            container.appendChild(linkElement);
+          }
+        });
+      }
+
+      // 更新面包屑导航
+      function updateBreadcrumb() {
+        breadcrumbElement.innerHTML = "";
+
+        // 添加根目录
+        const rootElement = document.createElement("span");
+        rootElement.textContent = getRootFolderName(currentRootFolder);
+        rootElement.style.cursor = "pointer";
+        rootElement.addEventListener("click", () => {
+          currentPath = [];
+          updateBreadcrumb();
+          renderMainContent();
+        });
+        breadcrumbElement.appendChild(rootElement);
+
+        // 添加当前路径
+        let currentItems = bookmarksData.roots[currentRootFolder].children;
+        let partialPath = [];
+
+        currentPath.forEach((index, level) => {
+          breadcrumbElement.appendChild(document.createTextNode(" > "));
+
+          const item = currentItems[index];
+          if (item) {
+            partialPath.push(index);
+
+            const pathElement = document.createElement("span");
+            pathElement.textContent = item.name;
+            pathElement.style.cursor = "pointer";
+
+            // 为路径元素添加点击事件
+            const thisPath = [...partialPath];
+            pathElement.addEventListener("click", () => {
+              currentPath = thisPath;
+              updateBreadcrumb();
+              renderMainContent();
+            });
+
+            breadcrumbElement.appendChild(pathElement);
+
+            // 更新当前items以便获取下一级
+            if (item.children) {
+              currentItems = item.children;
+            }
+          }
+        });
+      }
+
+      // 获取根文件夹的显示名称
+      function getRootFolderName(rootKey) {
+        switch (rootKey) {
+          case "bookmark_bar":
+            return "书签栏";
+          case "other":
+            return "其他书签";
+          case "synced":
+            return "同步的书签";
+          default:
+            return rootKey;
+        }
+      }
+
+      // 搜索书签
+      function searchBookmarks(searchTerm) {
+        bookmarkContent.innerHTML = "";
+        breadcrumbElement.innerHTML = `搜索结果: "${searchTerm}"`;
+
+        const results = [];
+
+        // 递归搜索书签
+        function searchInItems(items, path = []) {
+          if (!items) return;
+
+          items.forEach((item, index) => {
+            const currentPath = [...path, index];
+
+            if (
+              (item.name && item.name.toLowerCase().includes(searchTerm)) ||
+              (item.url && item.url.toLowerCase().includes(searchTerm))
+            ) {
+              results.push({
+                item,
+                path: currentPath,
+              });
+            }
+
+            if (item.children) {
+              searchInItems(item.children, currentPath);
+            }
+          });
+        }
+
+        // 在所有三个根文件夹中搜索
+        ["bookmark_bar", "other", "synced"].forEach((rootKey) => {
+          const rootFolder = bookmarksData.roots[rootKey];
+          if (rootFolder && rootFolder.children) {
+            searchInItems(rootFolder.children, [rootKey]);
+          }
+        });
+
+        // 显示搜索结果
+        if (results.length === 0) {
+          bookmarkContent.innerHTML = "<p>没有找到匹配的书签</p>";
+          return;
+        }
+
+        results.forEach((result) => {
+          const { item, path } = result;
+
+          const resultItem = document.createElement("div");
+          resultItem.className = "search-result";
+
+          if (item.type === "url") {
+            const link = document.createElement("a");
+            link.href = item.url;
+            link.className = "bookmark-item";
+            link.textContent = item.name;
+            link.target = "_blank";
+            resultItem.appendChild(link);
+          } else {
+            const folderLink = document.createElement("div");
+            folderLink.className = "folder-title";
+            folderLink.textContent = item.name;
+
+            folderLink.addEventListener("click", () => {
+              const rootKey = path[0];
+              const folderPath = path.slice(1);
+
+              // 切换到对应的根文件夹
+              document
+                .querySelector(`.tab-button[data-target="${rootKey}"]`)
+                .click();
+
+              // 设置当前路径到搜索结果的路径
+              currentPath = folderPath;
+              updateBreadcrumb();
+              renderMainContent();
+            });
+
+            resultItem.appendChild(folderLink);
+          }
+
+          bookmarkContent.appendChild(resultItem);
+        });
+      }
+
+      // 为演示目的，加载demo数据
+      if (typeof BookmarksDemo !== "undefined") {
+        bookmarksData = BookmarksDemo;
+        initBookmarks();
+      }
+    </script>
+
+    <!-- 加载BookmarksDemo示例数据 -->
+    <script src="bookmark-loader.js"></script>
+  </body>
+</html>
