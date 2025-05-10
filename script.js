@@ -701,28 +701,6 @@ document.addEventListener('DOMContentLoaded', function() {
       spacePath.textContent = pathText;
       spaceContainer.appendChild(spacePath);
 
-      // 添加控制按钮
-      const spaceControls = document.createElement("div");
-      spaceControls.className = "space-controls";
-
-      // 添加自动旋转按钮
-      const rotateBtn = document.createElement("button");
-      rotateBtn.className = "space-control-btn";
-      rotateBtn.textContent = spaceAutoRotate ? "暂停动画" : "开始动画";
-      rotateBtn.addEventListener("click", () => {
-        spaceAutoRotate = !spaceAutoRotate;
-        rotateBtn.textContent = spaceAutoRotate ? "暂停动画" : "开始动画";
-
-        // 更新所有轨道动画
-        const orbits = spaceContainer.querySelectorAll(".space-orbit");
-        orbits.forEach(orbit => {
-          orbit.style.animationPlayState = spaceAutoRotate ? "running" : "paused";
-        });
-      });
-      spaceControls.appendChild(rotateBtn);
-
-      spaceContainer.appendChild(spaceControls);
-
       // 渲染当前层级的内容
       if (currentItems && currentItems.length > 0) {
         renderSpaceItems(currentItems, spaceContainer);
@@ -931,11 +909,14 @@ document.addEventListener('DOMContentLoaded', function() {
       orbit.style.animationDuration = (80 + i * 20) + "s"; // 外层轨道旋转慢一些
       
       // 确保轨道显示
-      orbit.style.border = "1px dashed rgba(67, 97, 238, 0.5)";
+      orbit.style.border = "2px dashed rgba(67, 97, 238, 0.5)";
       orbit.style.boxSizing = "border-box";
 
+      // 仅根据全局设置决定轨道是否旋转
       if (!spaceAutoRotate) {
         orbit.style.animationPlayState = "paused";
+      } else {
+        orbit.style.animationPlayState = "running";
       }
 
       container.appendChild(orbit);
@@ -1104,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       spaceItem.appendChild(tooltip);
 
-      // 添加鼠标悬停事件
+      // 鼠标悬停事件
       spaceItem.addEventListener('mouseenter', function() {
         console.log(`悬停在项目上: ${item.name}`);
         // 调整提示框位置
@@ -1125,18 +1106,11 @@ document.addEventListener('DOMContentLoaded', function() {
           tooltip.style.top = "auto";
           tooltip.style.bottom = "0";
         }
-        
-        // 暂停当前轨道旋转，便于点击
-        if (orbit) {
-          orbit.style.animationPlayState = "paused";
-        }
       });
       
       // 鼠标离开时恢复轨道旋转
       spaceItem.addEventListener('mouseleave', function() {
-        if (orbit && spaceAutoRotate) {
-          orbit.style.animationPlayState = "running";
-        }
+        // 不做任何特殊处理
       });
 
       // 添加点击事件
@@ -1204,6 +1178,43 @@ document.addEventListener('DOMContentLoaded', function() {
     helpText.style.borderRadius = "20px";
     helpText.style.zIndex = "100";
     container.appendChild(helpText);
+    
+    // 添加轨道旋转控制按钮
+    const rotateBtn = document.createElement("div");
+    rotateBtn.className = "space-rotate-btn";
+    rotateBtn.textContent = spaceAutoRotate ? "暂停轨道" : "播放轨道";
+    rotateBtn.style.position = "absolute";
+    rotateBtn.style.bottom = "30px";
+    rotateBtn.style.right = "30px";
+    rotateBtn.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+    rotateBtn.style.color = "white";
+    rotateBtn.style.padding = "10px 15px";
+    rotateBtn.style.borderRadius = "20px";
+    rotateBtn.style.cursor = "pointer";
+    rotateBtn.style.zIndex = "100";
+    rotateBtn.style.boxShadow = "0 0 10px rgba(67, 97, 238, 0.7)";
+    rotateBtn.style.transition = "background-color 0.3s";
+    
+    rotateBtn.addEventListener("click", function() {
+      spaceAutoRotate = !spaceAutoRotate;
+      this.textContent = spaceAutoRotate ? "暂停轨道" : "播放轨道";
+      
+      // 更新所有轨道的旋转状态
+      document.querySelectorAll('.space-orbit').forEach(orbit => {
+        orbit.style.animationPlayState = spaceAutoRotate ? "running" : "paused";
+      });
+    });
+    
+    // 鼠标悬停效果
+    rotateBtn.addEventListener("mouseenter", function() {
+      this.style.backgroundColor = "rgba(67, 97, 238, 0.8)";
+    });
+    
+    rotateBtn.addEventListener("mouseleave", function() {
+      this.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+    });
+    
+    container.appendChild(rotateBtn);
   }
 
   // 更新面包屑导航
@@ -1592,69 +1603,9 @@ document.addEventListener('DOMContentLoaded', function() {
       spacePath.textContent = `搜索结果: "${searchTerm}" (${results.length}个)`;
       spaceContainer.appendChild(spacePath);
 
-      // 添加控制按钮
-      const spaceControls = document.createElement("div");
-      spaceControls.className = "space-controls";
-
-      // 添加自动旋转按钮
-      const rotateBtn = document.createElement("button");
-      rotateBtn.className = "space-control-btn";
-      rotateBtn.textContent = spaceAutoRotate ? "暂停动画" : "开始动画";
-      rotateBtn.addEventListener("click", () => {
-        spaceAutoRotate = !spaceAutoRotate;
-        rotateBtn.textContent = spaceAutoRotate ? "暂停动画" : "开始动画";
-
-        // 更新所有轨道动画
-        const orbits = spaceContainer.querySelectorAll(".space-orbit");
-        orbits.forEach(orbit => {
-          orbit.style.animationPlayState = spaceAutoRotate ? "running" : "paused";
-        });
-      });
-      spaceControls.appendChild(rotateBtn);
-
-      spaceContainer.appendChild(spaceControls);
-
-      // 创建搜索结果数组，用于星际视图渲染
-      const searchResultItems = results.map(result => result.item);
-
-      // 渲染为星际视图
-      if (searchResultItems.length > 0) {
-        renderSpaceItems(searchResultItems, spaceContainer);
-
-        // 为搜索结果添加点击事件处理
-        const spaceItems = spaceContainer.querySelectorAll('.space-item');
-        spaceItems.forEach((item, index) => {
-          // 获取对应结果
-          const result = results[index];
-
-          // 替换原有的点击事件
-          item.onclick = null;
-
-          if (result.item.type === "folder") {
-            item.addEventListener("click", function(e) {
-              // 如果点击的是信息按钮，不执行导航
-              if (e.target.closest('.space-info-btn')) {
-                return;
-              }
-
-              // 导航到文件夹
-              currentRootFolder = result.rootKey || currentRootFolder;
-              currentPath = result.path;
-              updateBreadcrumb();
-              renderMainContent();
-            });
-          } else if (result.item.type === "url") {
-            item.addEventListener("click", function(e) {
-              // 如果点击的是信息按钮，不执行打开链接
-              if (e.target.closest('.space-info-btn')) {
-                return;
-              }
-
-              // 打开URL链接
-              window.open(result.item.url, "_blank");
-            });
-          }
-        });
+      // 渲染搜索结果
+      if (results.length > 0) {
+        renderSpaceItems(results.map(result => result.item), spaceContainer);
       } else {
         const noContent = document.createElement("div");
         noContent.style.color = "white";
