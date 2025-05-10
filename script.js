@@ -412,8 +412,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 初始化书签
   function initBookmarks() {
-    if (!bookmarksData) return;
-
+    console.log('初始化书签内容...');
+    
+    // 从全局变量获取书签数据
+    if (!window.BookmarksDemo) {
+      console.error('错误: BookmarksDemo 数据未定义');
+      return;
+    }
+    
+    // 将BookmarksDemo数据赋值给bookmarksData
+    bookmarksData = window.BookmarksDemo;
+    console.log('书签数据加载成功，初始化界面');
+    
     // 清除欢迎信息
     const welcomeInfo = document.getElementById("welcome-info");
     if (welcomeInfo) {
@@ -422,6 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 统计书签总数
     const totalCount = countBookmarks();
+    console.log(`找到 ${totalCount} 个书签`);
 
     // 清空当前路径
     currentPath = [];
@@ -434,7 +445,10 @@ document.addEventListener('DOMContentLoaded', function() {
     renderSidebar();
 
     // 渲染主内容区域（默认显示第一个一级目录的内容）
+    console.log('渲染主内容区域...');
     renderMainContent();
+    
+    console.log('初始化完成');
   }
 
   // 统计书签总数
@@ -533,20 +547,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 渲染主内容区域
   function renderMainContent() {
+    console.log('渲染主内容 - 当前视图模式:', currentViewMode);
     bookmarkContent.innerHTML = "";
 
-    if (!bookmarksData) return;
+    if (!bookmarksData) {
+      console.error('错误: bookmarksData 未定义');
+      bookmarkContent.innerHTML = "<p class='error'>书签数据未加载</p>";
+      return;
+    }
 
+    if (!bookmarksData.roots) {
+      console.error('错误: bookmarksData.roots 未定义');
+      bookmarkContent.innerHTML = "<p class='error'>书签数据结构不正确</p>";
+      return;
+    }
+
+    if (!bookmarksData.roots[currentRootFolder]) {
+      console.error(`错误: 根文件夹 ${currentRootFolder} 不存在`);
+      bookmarkContent.innerHTML = `<p class='error'>根文件夹 ${currentRootFolder} 不存在</p>`;
+      return;
+    }
+
+    console.log(`获取 ${currentRootFolder} 的子项...`);
     let currentItems = bookmarksData.roots[currentRootFolder].children;
+    
+    if (!currentItems) {
+      console.error(`错误: ${currentRootFolder} 没有子项`);
+      bookmarkContent.innerHTML = `<p class='error'>${getRootFolderName(currentRootFolder)} 没有子项</p>`;
+      return;
+    }
 
     // 根据当前路径获取要显示的items
+    console.log('当前路径:', currentPath);
     for (const index of currentPath) {
       if (currentItems[index] && currentItems[index].children) {
         currentItems = currentItems[index].children;
       } else {
+        console.error(`错误: 无法按路径 ${currentPath} 导航`);
         break;
       }
     }
+    
+    console.log(`找到 ${currentItems.length} 个项目用于显示`);
 
     // 创建视图切换控件
     const viewToggleContainer = document.createElement("div");
@@ -868,9 +910,16 @@ document.addEventListener('DOMContentLoaded', function() {
   function renderSpaceItems(items, container) {
     // 清除之前的位置数据
     spaceBookmarksPositions = {};
-
+    
+    // 调试信息 - 检查是否有项目传入
+    console.log(`星际视图渲染: 接收到 ${items.length} 个项目`);
+    
+    // 在容器上直接添加一个标记，表示这是一个星际视图
+    container.setAttribute('data-view', 'space');
+    
     // 创建轨道
     const maxOrbit = Math.min(5, Math.ceil(items.length / 5));
+    console.log(`创建 ${maxOrbit} 个轨道`);
     const orbits = [];
 
     for (let i = 0; i < maxOrbit; i++) {
@@ -880,6 +929,10 @@ document.addEventListener('DOMContentLoaded', function() {
       orbit.style.width = size + "px";
       orbit.style.height = size + "px";
       orbit.style.animationDuration = (80 + i * 20) + "s"; // 外层轨道旋转慢一些
+      
+      // 确保轨道显示
+      orbit.style.border = "1px dashed rgba(67, 97, 238, 0.5)";
+      orbit.style.boxSizing = "border-box";
 
       if (!spaceAutoRotate) {
         orbit.style.animationPlayState = "paused";
@@ -889,12 +942,29 @@ document.addEventListener('DOMContentLoaded', function() {
       orbits.push(orbit);
     }
 
+    // 创建一个中心球体作为参考点
+    const centerOrb = document.createElement("div");
+    centerOrb.className = "center-orb";
+    centerOrb.style.position = "absolute";
+    centerOrb.style.width = "20px";
+    centerOrb.style.height = "20px";
+    centerOrb.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    centerOrb.style.borderRadius = "50%";
+    centerOrb.style.top = "50%";
+    centerOrb.style.left = "50%";
+    centerOrb.style.transform = "translate(-50%, -50%)";
+    centerOrb.style.zIndex = "10";
+    centerOrb.style.boxShadow = "0 0 10px rgba(255, 255, 255, 0.8)";
+    container.appendChild(centerOrb);
+
     // 创建书签布局
     items.forEach((item, index) => {
       // 为每个项目分配一个轨道
       const orbitIndex = index % maxOrbit;
       const orbit = orbits[orbitIndex];
       const orbitSize = 300 + (orbitIndex * 150);
+      
+      console.log(`项目 ${index}: ${item.name} - 分配到轨道 ${orbitIndex}`);
 
       // 计算轨道上的位置角度 (均匀分布)
       const itemsInCurrentOrbit = Math.ceil(items.length / maxOrbit);
@@ -905,12 +975,16 @@ document.addEventListener('DOMContentLoaded', function() {
       // 创建书签项目元素
       const spaceItem = document.createElement("div");
       spaceItem.className = "space-item";
+      spaceItem.setAttribute("data-index", index);
+      spaceItem.setAttribute("data-name", item.name);
+      spaceItem.setAttribute("data-type", item.type);
 
       // 根据角度计算位置
       const radians = angle * (Math.PI / 180);
       const radius = orbitSize / 2;
-      const left = 50 + Math.cos(radians) * radius / 2; // 除以2是为了让轨道在容器内
-      const top = 50 + Math.sin(radians) * radius / 2;
+      // 调整计算方式，确保球体显示在轨道上
+      const left = 50 + Math.cos(radians) * (radius / orbitSize * 100) / 2;
+      const top = 50 + Math.sin(radians) * (radius / orbitSize * 100) / 2;
 
       // 存储位置信息
       spaceBookmarksPositions[index] = { left, top };
@@ -918,27 +992,38 @@ document.addEventListener('DOMContentLoaded', function() {
       // 设置位置
       spaceItem.style.left = left + "%";
       spaceItem.style.top = top + "%";
-      spaceItem.style.transform = `translateX(-50%) translateY(-50%) translateZ(${20 * (maxOrbit - orbitIndex)}px)`;
+      spaceItem.style.transform = `translateX(-50%) translateY(-50%)`;
+      // 确保球体显示
+      spaceItem.style.zIndex = 10 + (maxOrbit - orbitIndex);
 
       // 创建球体
       const spaceOrb = document.createElement("div");
       spaceOrb.className = `space-orb ${item.type === "folder" ? "folder" : "url"}`;
+      // 增大球体尺寸
+      spaceOrb.style.width = "160px";
+      spaceOrb.style.height = "160px";
+      // 增加发光效果
+      spaceOrb.style.boxShadow = "0 0 30px 5px rgba(67, 97, 238, 0.7), inset 0 0 30px rgba(255, 255, 255, 0.7)";
 
       // 添加目标标记
       const targetElement = document.createElement("div");
       targetElement.className = "space-target";
+      targetElement.style.opacity = "0.8"; // 使目标标记更明显
       spaceOrb.appendChild(targetElement);
 
       // 添加图标
       const iconElement = document.createElement("div");
       iconElement.className = "space-icon";
       iconElement.textContent = item.type === "folder" ? "📁" : "🔗";
+      iconElement.style.fontSize = "36px"; // 增大图标
       spaceOrb.appendChild(iconElement);
 
       // 添加名称
       const nameElement = document.createElement("div");
       nameElement.className = "space-name";
       nameElement.textContent = item.name;
+      nameElement.style.fontSize = "16px"; // 增大字体
+      nameElement.style.maxWidth = "140px"; // 增加宽度
       spaceOrb.appendChild(nameElement);
 
       // 如果是URL，添加URL指示器
@@ -954,29 +1039,36 @@ document.addEventListener('DOMContentLoaded', function() {
           // 如果解析URL失败，使用原始URL
         }
         urlIndicator.textContent = displayUrl;
+        urlIndicator.style.opacity = "1"; // 始终显示URL
+        urlIndicator.style.background = "rgba(0, 0, 0, 0.5)";
         spaceOrb.appendChild(urlIndicator);
       }
 
       // 添加查看提示
       const hintElement = document.createElement("div");
       hintElement.className = "space-view-hint";
-      hintElement.textContent = item.type === "folder" ? "查看文件夹" : "查看网址";
+      hintElement.textContent = item.type === "folder" ? "点击查看文件夹" : "点击打开链接";
+      hintElement.style.opacity = "0.7"; // 默认显示提示
+      hintElement.style.background = "rgba(67, 97, 238, 0.5)"; 
       spaceOrb.appendChild(hintElement);
 
       // 添加光晕
       const glowElement = document.createElement("div");
       glowElement.className = "space-glow";
+      glowElement.style.opacity = "0.5"; // 增强光晕效果
       spaceOrb.appendChild(glowElement);
 
       // 添加光环
       const ringElement = document.createElement("div");
       ringElement.className = "space-ring";
+      ringElement.style.opacity = "0.8"; // 增强光环效果
       spaceOrb.appendChild(ringElement);
 
       // 添加信息按钮
       const infoBtn = document.createElement("div");
       infoBtn.className = "space-info-btn";
       infoBtn.textContent = "i";
+      infoBtn.style.opacity = "0.8"; // 默认显示信息按钮
       infoBtn.addEventListener("mouseenter", (e) => {
         e.stopPropagation();
         openModal(item);
@@ -1014,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // 添加鼠标悬停事件
       spaceItem.addEventListener('mouseenter', function() {
+        console.log(`悬停在项目上: ${item.name}`);
         // 调整提示框位置
         const rect = spaceItem.getBoundingClientRect();
         tooltip.style.left = "150%";
@@ -1032,6 +1125,18 @@ document.addEventListener('DOMContentLoaded', function() {
           tooltip.style.top = "auto";
           tooltip.style.bottom = "0";
         }
+        
+        // 暂停当前轨道旋转，便于点击
+        if (orbit) {
+          orbit.style.animationPlayState = "paused";
+        }
+      });
+      
+      // 鼠标离开时恢复轨道旋转
+      spaceItem.addEventListener('mouseleave', function() {
+        if (orbit && spaceAutoRotate) {
+          orbit.style.animationPlayState = "running";
+        }
       });
 
       // 添加点击事件
@@ -1040,6 +1145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         spaceOrb.classList.add("pulse");
 
         spaceOrb.addEventListener("click", function(e) {
+          console.log(`点击文件夹: ${item.name}`);
           // 如果点击的是信息按钮，不执行导航
           if (e.target.closest('.space-info-btn')) {
             return;
@@ -1053,6 +1159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       } else if (item.type === "url") {
         spaceOrb.addEventListener("click", function(e) {
+          console.log(`点击链接: ${item.name}, URL: ${item.url}`);
           // 如果点击的是信息按钮，不执行打开链接
           if (e.target.closest('.space-info-btn')) {
             return;
@@ -1065,8 +1172,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // 组装并添加到DOM
       spaceItem.appendChild(spaceOrb);
+      
+      // 直接添加到container，不是orbit
       container.appendChild(spaceItem);
+      
+      // 在轨道上也添加一个参考点，表示书签位置
+      const orbitMarker = document.createElement("div");
+      orbitMarker.className = "orbit-marker";
+      orbitMarker.style.position = "absolute";
+      orbitMarker.style.width = "8px";
+      orbitMarker.style.height = "8px";
+      orbitMarker.style.backgroundColor = item.type === "folder" ? "gold" : "skyblue";
+      orbitMarker.style.borderRadius = "50%";
+      orbitMarker.style.boxShadow = "0 0 5px rgba(255, 255, 255, 0.8)";
+      orbitMarker.style.top = "50%";
+      orbitMarker.style.left = "50%";
+      orbitMarker.style.transform = `rotate(${angle}deg) translateX(${radius/2}px) rotate(-${angle}deg)`;
+      orbit.appendChild(orbitMarker);
     });
+    
+    // 添加视觉提示，说明如何使用星际视图
+    const helpText = document.createElement("div");
+    helpText.className = "space-help-text";
+    helpText.textContent = "🔍 点击球体打开书签或文件夹";
+    helpText.style.position = "absolute";
+    helpText.style.top = "60px";
+    helpText.style.right = "20px";
+    helpText.style.color = "white";
+    helpText.style.background = "rgba(0, 0, 0, 0.5)";
+    helpText.style.padding = "8px 15px";
+    helpText.style.borderRadius = "20px";
+    helpText.style.zIndex = "100";
+    container.appendChild(helpText);
   }
 
   // 更新面包屑导航
@@ -1532,17 +1669,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 处理文件函数
   function handleFile(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        bookmarksData = JSON.parse(e.target.result);
-        initBookmarks();
-      } catch (error) {
-        alert("解析书签文件失败，请确保文件格式正确");
-        console.error("解析书签文件失败", error);
-      }
-    };
-    reader.readAsText(file);
+    console.log(`处理文件: ${file.name}, 大小: ${file.size} 字节`);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          console.log('文件读取完成，解析内容...');
+          const data = JSON.parse(e.target.result);
+          
+          // 检查数据结构
+          if (!data.roots) {
+            console.error('书签文件无效: 缺少roots属性');
+            alert('书签文件无效，请确保上传的是Chrome导出的书签文件');
+            return;
+          }
+          
+          // 检查根目录
+          const roots = Object.keys(data.roots);
+          if (!roots.includes('bookmark_bar') && !roots.includes('other') && !roots.includes('synced')) {
+            console.warn('书签文件可能不完整: 没有找到标准的根目录');
+          }
+          
+          console.log('书签解析成功，找到根目录:', roots);
+          
+          // 将数据赋值给全局变量
+          window.BookmarksDemo = data;
+          bookmarksData = data;
+          
+          // 初始化书签界面
+          initBookmarks();
+        } catch (error) {
+          console.error('解析书签文件失败:', error);
+          alert('解析书签文件失败: ' + error.message);
+        }
+      };
+      reader.onerror = function(e) {
+        console.error('读取文件失败:', e);
+        alert('读取文件失败');
+      };
+      reader.readAsText(file);
+    }
   }
 
   // 为演示目的，加载demo数据
