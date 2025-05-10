@@ -1,0 +1,86 @@
+/* 瀑布流视图相关样式 */
+.waterfall-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: 10px;
+  grid-auto-flow: dense;
+}
+
+.folder-title {
+  padding: 10px 12px;
+  background-color: var(--folder-bg);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px var(--shadow-color);
+  color: var(--folder-text);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  padding-right: 30px;
+}
+
+.folder-title::before {
+  content: "📁";
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.folder-title:hover {
+  background-color: var(--folder-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px var(--shadow-hover);
+}
+
+.folder-title.active {
+  background-color: var(--active-folder-bg);
+  color: var(--active-folder-text);
+  font-weight: bold;
+}
+
+.bookmark-item {
+  display: flex;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--primary-color);
+  transition: all 0.2s ease;
+  background-color: var(--bookmark-bg);
+  box-shadow: 0 1px 2px var(--shadow-color);
+  font-weight: 500;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  padding-right: 30px;
+}
+
+.bookmark-item::before {
+  content: "🔗";
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.bookmark-item:hover {
+  background-color: var(--bookmark-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px var(--shadow-hover);
+}
+
+.search-result {
+  margin-bottom: 8px;
+}
+
+/* 响应式瀑布流布局 */
+@media (max-width: 768px) {
+  .waterfall-container {
+    grid-template-columns: 1fr;
+    grid-gap: 6px;
+  }
+} 

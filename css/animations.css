@@ -1,0 +1,113 @@
+/* 动画效果样式 */
+
+/* 呼吸效果 */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+
+/* 闪烁效果 */
+@keyframes twinkling {
+  from { background-position: 0 0; }
+  to { background-position: 400px 400px; }
+}
+
+/* 网格移动 */
+@keyframes grid-move {
+  from { background-position: 0 0; }
+  to { background-position: 50px 50px; }
+}
+
+/* 渐入上移效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 边框发光效果 */
+@keyframes borderGlow {
+  0% { box-shadow: 0 0 5px rgba(52, 172, 245, 0.5); }
+  50% { box-shadow: 0 0 15px rgba(52, 172, 245, 0.8); }
+  100% { box-shadow: 0 0 5px rgba(52, 172, 245, 0.5); }
+}
+
+/* 旋转效果 */
+@keyframes rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 自旋转效果 */
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotateX(80deg) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotateX(80deg) rotate(360deg); }
+}
+
+/* 目标旋转效果 */
+@keyframes rotate-target {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 脉冲动画 */
+@keyframes pulse-animation {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+
+/* 帮助文本脉冲 */
+@keyframes pulse-help {
+  0% { opacity: 0.7; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.7; }
+}
+
+/* 应用动画的通用类 */
+.pulse {
+  animation: pulse-animation 2s infinite;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s forwards;
+}
+
+.rotate {
+  animation: rotate 60s linear infinite;
+}
+
+.spin {
+  animation: spin 30s linear infinite;
+}
+
+.border-glow {
+  animation: borderGlow 1.5s infinite;
+}
+
+/* 动画延迟类 */
+.delay-1 {
+  animation-delay: 0.1s;
+}
+
+.delay-2 {
+  animation-delay: 0.2s;
+}
+
+.delay-3 {
+  animation-delay: 0.3s;
+}
+
+.delay-4 {
+  animation-delay: 0.4s;
+}
+
+.delay-5 {
+  animation-delay: 0.5s;
+} 
