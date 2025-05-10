@@ -4,13 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chrome书签浏览器</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="drop-zone" id="drop-zone">
-      <div class="drop-zone-message">
-        释放鼠标上传书签文件
-      </div>
+      <div class="drop-zone-message">释放鼠标上传书签文件</div>
     </div>
     <div class="container">
       <div class="header">
@@ -21,7 +19,7 @@
           <div class="theme-switch-wrapper">
             <span class="theme-icon">🌞</span>
             <label class="theme-switch">
-              <input type="checkbox" id="theme-toggle">
+              <input type="checkbox" id="theme-toggle" />
               <span class="theme-slider"></span>
             </label>
             <span class="theme-icon">🌙</span>
@@ -50,16 +48,19 @@
           <div id="bookmark-content">
             <div id="welcome-info" class="welcome-info">
               <h2>Chrome书签浏览工具</h2>
-              <p>请点击右上角的"上传书签"按钮，选择Chrome的书签文件。</p>
+              <p>请点击右上角的"上传书签"按钮,选择Chrome的书签文件.</p>
               <p>
-                Chrome书签文件通常位于：<code
-                  >C:\Users\[用户名]\AppData\Local\Google\Chrome\User
-                  Data\Default\Bookmarks</code
-                >
+                Chrome书签文件通常位于:
+                <br/>
+                cmd:
+                <code>cd %USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default</code>
+                <br/>
+                powershell:
+                <code>cd "$env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default"</code>
               </p>
-              <p>注意：书签文件没有后缀名，但是它是一个标准的JSON文件。</p>
-              <p>您也可以直接拖拽书签文件到此页面进行上传。</p>
-              <p>上传成功后，您可以：</p>
+              <p>注意:书签文件没有后缀名,但是它是一个标准的JSON文件.</p>
+              <p>您也可以直接拖拽书签文件到此页面进行上传.</p>
+              <p>上传成功后,您可以:</p>
               <ul>
                 <li>在左侧浏览书签目录结构</li>
                 <li>点击文件夹查看子文件夹和书签</li>
