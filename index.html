@@ -13,7 +13,9 @@
     <div class="container">
       <div class="header">
         <div class="search-container">
-          <input type="text" class="search-input" placeholder="搜索书签内容" />
+          <label>
+            <input type="text" class="search-input" placeholder="搜索书签内容" />
+          </label>
         </div>
         <div class="header-controls">
           <div class="theme-switch-wrapper">
@@ -55,8 +57,12 @@
                 cmd:
                 <code>cd %USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default</code>
                 <br/>
+                <code>explorer %USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default</code>
+                <br/>
                 powershell:
                 <code>cd "$env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default"</code>
+                <br/>
+                <code>explorer "$env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default"</code>
               </p>
               <p>注意:书签文件没有后缀名,但是它是一个标准的JSON文件.</p>
               <p>您也可以直接拖拽书签文件到此页面进行上传.</p>
@@ -76,7 +82,18 @@
 
     <!-- 加载BookmarksDemo示例数据 目前暂不加载只调试使用目前不用 -->
     <!-- <script src="bookmark-loader.js"></script> -->
-    <!-- 加载主脚本 -->
-    <script src="script.js"></script>
+    
+    <!-- 加载所有JavaScript文件（按照依赖顺序） -->
+    <script src="js/utils.js"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/infoButton.js"></script>
+    <script src="js/breadcrumb.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/renderers2.js"></script>
+    <script src="js/renderers.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/fileHandler.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>
